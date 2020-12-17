@@ -1,7 +1,7 @@
 # Chowkidar
 ### JWT Authentication for Django Graphene
-[![npm](https://img.shields.io/pypi/v/chowkidar-graphene)](https://pypi.org/project/chowkidar-graphene/)
 [![license](https://img.shields.io/github/license/aswinshenoy/chowkidar.svg)](LICENSE)
+[![npm](https://img.shields.io/pypi/v/chowkidar-graphene)](https://pypi.org/project/chowkidar-graphene/)
 
 An JWT-based authentication package for Django [Graphene](https://github.com/graphql-python/graphene) GraphQL APIs.
 

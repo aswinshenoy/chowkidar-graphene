@@ -14,7 +14,7 @@ from graphene_django.views import GraphQLView as BaseGraphQLView
 
 from graphene.utils.str_converters import to_snake_case, to_camel_case
 
-from framework.graphql.utils import APIException
+from .exceptions import APIException
 from .files import place_files_in_operations
 from ..auth import respond_handling_authentication
 from ..utils import AuthError, PermissionDenied
