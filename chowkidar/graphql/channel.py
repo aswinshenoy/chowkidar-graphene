@@ -3,11 +3,13 @@ from http.cookies import SimpleCookie
 from channels.auth import UserLazyObject
 from channels.db import database_sync_to_async
 from channels.middleware import BaseMiddleware
+from django.contrib.auth import get_user_model
 
 from django.contrib.auth.models import AnonymousUser
 
-from user.models import User
 from ..auth.verify import resolve_user_from_tokens
+
+User = get_user_model()
 
 
 class ChannelAuthMiddleware(BaseMiddleware):

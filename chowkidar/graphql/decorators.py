@@ -1,5 +1,7 @@
-from user.models import User
+from django.contrib.auth import get_user_model
 from ..utils import exceptions
+
+User = get_user_model()
 
 
 def login_required(resolver):
