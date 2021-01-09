@@ -3,6 +3,7 @@ import graphene
 from chowkidar.auth import authenticate_user_from_credentials
 from .decorators import login_required
 from ..utils import AuthError
+from ..settings import USER_GRAPHENE_OBJECT
 
 
 class AuthenticatedUser(graphene.ObjectType):
@@ -12,7 +13,7 @@ class AuthenticatedUser(graphene.ObjectType):
 
 class GenerateTokenResponse(graphene.ObjectType):
     success = graphene.Boolean()
-    user = graphene.Field('user.graphql.types.user.PersonalProfile')
+    user = graphene.Field(USER_GRAPHENE_OBJECT)
 
 
 class AuthenticateUser(graphene.Mutation):

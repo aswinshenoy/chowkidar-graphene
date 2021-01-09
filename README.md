@@ -199,6 +199,26 @@ mutation {
 }
 ```
 
+#### Available Settings
+The following are the settings variables for the plugin to be defined in your project's `settings.py`. 
+All the setting variables along with their defaults values are listed below -
+
+```python
+
+JWT_SECRET_KEY = settings.SECRET_KEY
+JWT_PUBLIC_KEY = None
+JWT_PRIVATE_KEY = None
+JWT_REFRESH_TOKEN_N_BYTES = 20
+JWT_ALGORITHM = HS256
+JWT_EXPIRATION_DELTA = timedelta(seconds=60 * 5)
+JWT_REFRESH_TOKEN_EXPIRATION_DELTA = timedelta(seconds=60 * 60 * 24 * 7)
+JWT_LEEWAY = 0
+JWT_ISSUER = None
+
+USER_GRAPHENE_OBJECT = 'user.graphql.types.user.PersonalProfile'
+
+```
+
 #### FAQ
 
 **1. How to know whether RefreshToken has expired?**
@@ -213,6 +233,9 @@ No, as long as you send both refresh token and the access token in the request (
 since its a server side cookie) the server will perform the refresh if a valid refresh token exists either when 
 approaching expiry of access token, or when having an expired access token. In both cases, the actual query shall 
 also be properly resolved and not failed. :) 
+
+### Contributing
+Contributions are welcome! Feel free to open issues, and work on PRs to fix them.
 
 ### Credits
 This project is heavily inspired by `django-graphql-jwt` & `django-graphql-social-auth` by flavors, 

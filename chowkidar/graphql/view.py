@@ -117,8 +117,8 @@ class GraphQLView(BaseGraphQLView):
     def get_locations(error):
         if error.locations:
             locations = []
-            for l in error.locations:
-                locations.append({"line": l.line, "column": l.column})
+            for loc in error.locations:
+                locations.append({"line": loc.line, "column": loc.column})
             return locations
 
     def format_response_error(self, error: ResponseError):

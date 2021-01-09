@@ -16,3 +16,5 @@ JWT_REFRESH_TOKEN_EXPIRATION_DELTA = (
 )
 JWT_LEEWAY = settings.JWT_LEEWAY if hasattr(settings, 'JWT_LEEWAY') else 0
 JWT_ISSUER = settings.JWT_ISSUER if hasattr(settings, 'JWT_ISSUER') else None
+
+USER_GRAPHENE_OBJECT = 'user.graphql.types.user.PersonalProfile'
