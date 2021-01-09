@@ -110,7 +110,7 @@ def respond_handling_authentication(
 
             if UPDATE_USER_LAST_LOGIN_ON_HARD_REFRESH:
                 u = rt.user
-                u.last_login = refreshToken.issued
+                u.last_login = rt.issued
                 u.save()
 
             data = generate_token_from_claims(claims={
