@@ -69,9 +69,11 @@ class GraphQLView(BaseGraphQLView):
                 )
 
             data = self.parse_body(request)
-            show_graphiql = self.graphiql and self.can_display_graphiql(request, data)
+            allowGraphiQL = self.graphiql
+            if request and request.user and request.user.is_staff:
+                allowGraphiQL = True
 
-            if show_graphiql:
+            if allowGraphiQL and self.can_display_graphiql(request, data):
                 return render(request, "graphiql/graphiql.html")
 
             if self.batch:
@@ -79,7 +81,10 @@ class GraphQLView(BaseGraphQLView):
                 result = "[{}]".format(",".join([response[0] for response in responses]))
                 status_code = (responses and max(responses, key=lambda response: response[1])[1] or 200)
             else:
-                result, status_code = self.get_response(request, data, show_graphiql)
+                result, status_code = self.get_response(
+                    request, data,
+                    allowGraphiQL and self.can_display_graphiql(request, data)
+                )
             return respond_handling_authentication(status_code=status_code, result=json.loads(result), request=request)
 
         except HttpError as e:
