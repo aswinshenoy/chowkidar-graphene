@@ -8,7 +8,7 @@ JWT_PRIVATE_KEY = settings.JWT_PRIVATE_KEY if hasattr(settings, 'JWT_PRIVATE_KEY
 JWT_REFRESH_TOKEN_N_BYTES = settings.JWT_REFRESH_TOKEN_N_BYTES if hasattr(settings, 'JWT_REFRESH_TOKEN_N_BYTES') else 20
 JWT_ALGORITHM = settings.JWT_ALGORITHM if hasattr(settings, 'JWT_ALGORITHM') else 'HS256'
 JWT_EXPIRATION_DELTA = (
-    settings.JWT_EXPIRATION_DELTA if hasattr(settings, 'JWT_EXPIRATION_DELTA') else timedelta(seconds=60 * 5)
+    settings.JWT_EXPIRATION_DELTA if hasattr(settings, 'JWT_EXPIRATION_DELTA') else timedelta(seconds=60)
 )
 JWT_REFRESH_TOKEN_EXPIRATION_DELTA = (
     settings.JWT_REFRESH_TOKEN_EXPIRATION_DELTA if hasattr(settings, 'JWT_REFRESH_TOKEN_EXPIRATION_DELTA')
@@ -17,4 +17,6 @@ JWT_REFRESH_TOKEN_EXPIRATION_DELTA = (
 JWT_LEEWAY = settings.JWT_LEEWAY if hasattr(settings, 'JWT_LEEWAY') else 0
 JWT_ISSUER = settings.JWT_ISSUER if hasattr(settings, 'JWT_ISSUER') else None
 
+UPDATE_USER_LAST_LOGIN_ON_AUTH = True
+UPDATE_USER_LAST_LOGIN_ON_HARD_REFRESH = True
 USER_GRAPHENE_OBJECT = 'user.graphql.types.user.PersonalProfile'

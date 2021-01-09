@@ -1,5 +1,5 @@
-from chowkidar.models import RefreshToken
 from django.contrib.auth import get_user_model
+from chowkidar.models import RefreshToken
 
 UserModel = get_user_model()
 

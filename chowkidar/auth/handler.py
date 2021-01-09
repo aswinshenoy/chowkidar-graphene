@@ -3,7 +3,12 @@ from datetime import datetime
 from django.http import HttpRequest, JsonResponse
 
 from .revoke import revoke_refresh_token
-from ..settings import JWT_REFRESH_TOKEN_EXPIRATION_DELTA, JWT_EXPIRATION_DELTA
+from ..settings import (
+    JWT_REFRESH_TOKEN_EXPIRATION_DELTA,
+    JWT_EXPIRATION_DELTA,
+    UPDATE_USER_LAST_LOGIN_ON_AUTH,
+    UPDATE_USER_LAST_LOGIN_ON_HARD_REFRESH
+)
 from ..utils import generate_refresh_token, generate_token_from_claims, decode_payload_from_token
 from ..utils.cookie import set_cookie, delete_cookie
 
@@ -34,8 +39,13 @@ def respond_handling_authentication(
             else:
                 user = result['data']['authenticateUser']['user']
                 userID = user['id']
-
             refreshToken = generate_refresh_token(userID=userID)
+
+            if UPDATE_USER_LAST_LOGIN_ON_AUTH:
+                u = refreshToken.user
+                u.last_login = refreshToken.issued
+                u.save()
+
             data = generate_token_from_claims(claims={
                 'userID': userID, 'username': user['username'], 'origIat': refreshToken.issued.timestamp(),
             })
@@ -97,6 +107,12 @@ def respond_handling_authentication(
         from .verify import verify_refresh_token
         try:
             rt = verify_refresh_token(refreshToken)
+
+            if UPDATE_USER_LAST_LOGIN_ON_HARD_REFRESH:
+                u = rt.user
+                u.last_login = refreshToken.issued
+                u.save()
+
             data = generate_token_from_claims(claims={
                 'userID': rt.user.id, 'username': rt.user.username, 'origIat': rt.issued.timestamp(),
             })
