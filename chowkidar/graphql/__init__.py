@@ -1,9 +1,10 @@
 from .view import *
 
-from .schema import AuthMutations, SocialAuthMutations
+from .schema import AuthQueries, AuthMutations, SocialAuthMutations
 
 
 __all__ = [
+    'AuthQueries',
     'AuthMutations',
     'SocialAuthMutations',
     'GraphQLView',

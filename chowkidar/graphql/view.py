@@ -154,6 +154,8 @@ class GraphQLView(BaseGraphQLView):
             return {"message": error.__repr__(), "code": "ATTRIBUTE_ERROR"}
         if isinstance(error, TypeError):
             return {"message": error.__repr__(), "code": "TYPE_ERROR"}
+        if isinstance(error, KeyError):
+            return {"message": error.__repr__(), "code": "KEY_ERROR"}
         return self.format_response_error(error)
 
     def format_error(self, error):
