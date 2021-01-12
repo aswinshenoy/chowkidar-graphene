@@ -17,9 +17,12 @@ class AbstractRefreshToken(models.Model):
     token = models.CharField(max_length=255, editable=False)
     issued = models.DateTimeField(auto_now_add=True, editable=False)
     revoked = models.DateTimeField(null=True, blank=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    userAgent = models.CharField(max_length=255, null=True, blank=True)
 
     @staticmethod
     def generate_token():
+        """ Generates a refresh token """
         return binascii.hexlify(os.urandom(JWT_REFRESH_TOKEN_N_BYTES)).decode()
 
     def save(self, *args, **kwargs):

@@ -6,9 +6,11 @@
 An JWT-based authentication package for Django [Graphene](https://github.com/graphql-python/graphene) GraphQL APIs.
 
 ### Features
-* Out-of-the-box support for [Graphene](https://github.com/graphql-python/graphene) GraphQL APIs
+* Support for [Graphene](https://github.com/graphql-python/graphene) GraphQL APIs
 * Token & Refresh Token based JWT Authentication
 * Tokens stored as server-side cookie
+* Support for restricting 1 device / 1 login for a user
+* Support for logging IP & User-Agent of user
 * Ability to Auto-Refresh JWT Token if the Refresh Token Exists
 * Support for Social Auth with [social-app-django](https://github.com/python-social-auth/social-app-django)
 * Support for Authenticated GraphQL Subscriptions with Django Channels
@@ -62,23 +64,34 @@ schema = graphene.Schema(mutation=Mutation, query=Query)
 ### Auth Decorators
 Chowkidar supports 2 decorators that you can use in your API resolvers
 ```python3
-from chowkidar.graphql import login_required, resolve_user
+from chowkidar.graphql import login_required, fingerprint_required, resolve_user
 
 @login_required
 def resolve_field(self, info, sport=None, state=None, count=5, after=None):
     userID: str = info.context.userID
     some_function()
 
+@fingerprint_required
+def resolve_field(self, info, sport=None, state=None, count=5, after=None):
+    refreshToken = info.context.refreshToken
+    userID: str = info.context.userID
+    some_function()
+
+
 @resolve_user()
 def mutate(self, info):
     user: User = info.context.user
+    userID: str = info.context.userID
     some_update()
 ```
 
 1. **`@login_required`** - checks if user is authenticated, and passes down his/her userID at 
 info.context.userID. Does not hit the db.
 
-2. **`@resolve_user`** - checks if user is authenticated, and passes down his/her instance at info.context.user 
+2.  **`@fingerprint_required`** - checks the refresh token of the user against db after validating its
+fingerprint and returns info.context.userID & info.context.refreshToken
+
+3. **`@resolve_user`** - checks if user is authenticated, and passes down his/her instance at info.context.user 
 as well as his ID at info.context.userID. Hits the db to get the user instance.
 
 Both of these decorators, when wrapped around a query/mutation/type resolver, ensures that only logged-in users 
@@ -159,13 +172,6 @@ on success the following is returned, and 2 cookies (REFRESH_TOKEN & ACCESS_TOKE
         "id": "2441264196336223233",
         "username": "aswinshenoy"
       },
-      "payload": {
-        "userID": "2441264196336223233",
-        "username": "aswinshenoy",
-        "origIat": 1605316911.841719,
-        "iat": 1605316911,
-        "exp": 1605317211
-      },
       "refreshExpiresIn": "2020-11-21T01:21:51.848Z"
     }
   }
@@ -199,6 +205,37 @@ mutation {
 }
 ```
 
+**View sessions of a user**
+```graphql
+{
+  mySessions{
+    isActive
+    token
+    userAgent
+    ip
+    issued
+    revoked
+  }
+}
+```
+
+**Revoke Token**
+Revoke a given refresh token of the user
+```graphql
+mutation ($token: String!){
+  revokeToken(token: $token)
+}
+```
+
+**Revoke Other Tokens**
+Revoke all tokens except the current token. Useful to logout user from all other devices
+
+```graphql
+mutation {
+  revokeOtherTokens
+}
+```
+
 #### Available Settings
 The following are the settings variables for the plugin to be defined in your project's `settings.py`. 
 All the setting variables along with their defaults values are listed below -
@@ -215,14 +252,23 @@ JWT_REFRESH_TOKEN_EXPIRATION_DELTA = timedelta(seconds=60 * 60 * 24 * 7)
 JWT_LEEWAY = 0
 JWT_ISSUER = None
 
+# function with spec (user: User): bool, defaults to True
+ALLOW_USER_TO_LOGIN_ON_AUTH = 'chowkidar.auth.rules.check_if_user_is_allowed_to_login'
+# function with spec (user: User): bool, defaults to False
+REVOKE_OTHER_TOKENS_ON_AUTH_FOR_USER = 'chowkidar.auth.rules.check_if_other_tokens_need_to_be_revoked'
+
 UPDATE_USER_LAST_LOGIN_ON_AUTH = True
-UPDATE_USER_LAST_LOGIN_ON_HARD_REFRESH = True
+UPDATE_USER_LAST_LOGIN_ON_REFRESH = True
 USER_GRAPHENE_OBJECT = 'user.graphql.types.user.PersonalProfile'
+
+LOG_USER_IP_IN_REFRESH_TOKEN = True
+LOG_USER_AGENT_IN_REFRESH_TOKEN = True
+
 ```
 
 #### FAQ
 
-**1. How to know whether RefreshToken has expired?**
+**1. How to know whether RefreshToken has expired in the frontend?**
 
 0. When you do login using the API, we send back `refreshExpiresIn` on success. 
 1. Create a local cookie with expire time set to this `refreshExpiresIn`, with some value. 
@@ -237,6 +283,12 @@ also be properly resolved and not failed. :)
 
 ### Contributing
 Contributions are welcome! Feel free to open issues, and work on PRs to fix them.
+
+#### Building & Publishing the package
+```bash
+    python setup.py sdist
+    twine upload dist/*
+```
 
 ### Credits
 This project is heavily inspired by `django-graphql-jwt` & `django-graphql-social-auth` by flavors, 

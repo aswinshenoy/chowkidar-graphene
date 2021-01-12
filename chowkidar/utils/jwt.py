@@ -1,9 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import jwt
 
 from ..settings import (
-    JWT_EXPIRATION_DELTA,
     JWT_ISSUER,
     JWT_ALGORITHM,
     JWT_PRIVATE_KEY,
@@ -15,10 +14,11 @@ from ..settings import (
 from .exceptions import AuthError
 
 
-def generate_payload_from_claims(claims: dict) -> dict:
+def generate_payload_from_claims(claims: dict, expirationDelta: timedelta) -> dict:
     """
     Generates payload for creating JWT token including a dict of claims passed-in
     :param claims: a dict with claims for the JWT
+    :param expirationDelta: timedelta to expiration
     :return: a dict with payload for generating the JWT
     """
     now = datetime.utcnow()
@@ -29,7 +29,7 @@ def generate_payload_from_claims(claims: dict) -> dict:
         # issued at
         'iat': now,
         # expiration time
-        'exp': now + JWT_EXPIRATION_DELTA,
+        'exp': now + expirationDelta,
     }
     if JWT_ISSUER is not None:
         registeredClaims['iss'] = JWT_ISSUER
@@ -66,8 +66,8 @@ def decode_token(token: str) -> object:
     )
 
 
-def generate_token_from_claims(claims: dict) -> object:
-    payload = generate_payload_from_claims(claims)
+def generate_token_from_claims(claims: dict, expirationDelta) -> object:
+    payload = generate_payload_from_claims(claims, expirationDelta)
     return {"token": encode_payload(payload), "payload": payload}
 
 
