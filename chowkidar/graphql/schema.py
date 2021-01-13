@@ -81,10 +81,13 @@ class AuthenticateUser(graphene.Mutation, description='Authenticate a user using
     def mutate(self, info, password, email=None, username=None):
         try:
             user = authenticate_user_from_credentials(password=password, email=email, username=username)
+
             if not import_string(ALLOW_USER_TO_LOGIN_ON_AUTH)(user):
                 raise AuthError('User not allowed to login', code='FORBIDDEN')
+
             if import_string(REVOKE_OTHER_TOKENS_ON_AUTH_FOR_USER)(user):
-                revoke_other_tokens(userID=info.context.userID, request=info.context)
+                revoke_other_tokens(userID=user.id, request=info.context)
+
             return {"success": True, "user": user}
         except AuthError as e:
             raise e
@@ -161,6 +164,13 @@ class SocialAuth(graphene.Mutation, description='Authenticate a user using socia
 
         user = backend.do_auth(accessToken, user=None)
         _do_login(backend, user, user.social_user)
+
+        if not import_string(ALLOW_USER_TO_LOGIN_ON_AUTH)(user):
+            raise AuthError('User not allowed to login', code='FORBIDDEN')
+
+        if import_string(REVOKE_OTHER_TOKENS_ON_AUTH_FOR_USER)(user):
+            revoke_other_tokens(userID=user.id, request=info.context)
+
         return {"success": True, "user": user.__dict__}
 
 

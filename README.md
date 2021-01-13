@@ -162,7 +162,7 @@ mutation {
 
 ```
 
-on success the following is returned, and 2 cookies (REFRESH_TOKEN & ACCESS_TOKEN) are set -
+on success the following is returned, and 3 cookies (REFRESH_TOKEN & ACCESS_TOKEN) are set -
 ```json
 {
   "data": {
