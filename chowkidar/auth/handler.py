@@ -127,16 +127,24 @@ def respond_handling_authentication(
         try:
             resp = JsonResponse(result, status=status_code)
 
+            # verify and get refresh token. Will throw exceptions if token is invalid
             rt = verify_refresh_token(refreshToken)
+
+            # Generate fingerprint for current request
             fingerprint = generate_fingerprint_from_request(request)
             decoded = decode_fingerprint(fingerprint)
 
             # Check if fingerprint has changed due to IP or agent
             # If changed, issue a new refresh token invalidating the old one
-            if rt.userAgent != decoded['agent'] or rt.userAgent != decoded['ip']:
+            if (
+                rt.userAgent != decoded['agent']  # User Agent has changed
+                or rt.ip != decoded['ip']  # IP has changed
+            ):
+                # Revoke the old token
                 rt.revoked = timezone.now()
                 rt.save()
 
+                # Issue new refresh token
                 newToken = RefreshToken.objects.create(
                     user=rt.user,
                     ip=decoded['ip'],
@@ -175,7 +183,7 @@ def respond_handling_authentication(
             )
 
             return resp
-        except Exception:
+        except Exception as e:
             return clear_cookies(JsonResponse(result, status=status_code))
 
     return JsonResponse(result, status=status_code)

@@ -39,28 +39,30 @@ def resolve_user_from_request(request: HttpRequest) -> str:
 
 
 def verify_refresh_token(token: str) -> RefreshToken:
-    try:
-        payload = decode_payload_from_token(token=token)
-        if "fingerprint" in payload:
-            fingerprintDecode = decode_fingerprint(payload['fingerprint'])
+    payload = decode_payload_from_token(token=token)
+    if "fingerprint" in payload:
+        fingerprintDecode = decode_fingerprint(payload['fingerprint'])
+        if (
+            fingerprintDecode['ip'] == payload['ip'] and
+            fingerprintDecode['agent'] == payload['userAgent']
+        ):
+            token = RefreshToken.objects.get(
+                token=payload['refreshToken'],
+                revoked__isnull=True  # A refresh token is revoked if the revoked timestamp is set
+            )
             if (
-                fingerprintDecode['ip'] == payload['ip'] and
-                fingerprintDecode['agent'] == payload['userAgent']
+                # Check if the ip & user agents in payload match those in db
+                token.ip == payload['ip'] and
+                token.userAgent == payload['userAgent'] and
+                # Check if the token has not expired
+                token.issued + JWT_REFRESH_TOKEN_EXPIRATION_DELTA > timezone.now()
             ):
-                token = RefreshToken.objects.get(
-                    token=payload['refreshToken'],
-                    revoked__isnull=True  # A refresh token is revoked if the revoked timestamp is set
-                )
-                if (
-                    # Check if the ip & user agents in payload match those in db
-                    token.ip == payload['ip'] and
-                    token.userAgent == payload['userAgent'] and
-                    # Check if the token has not expired
-                    token.issued + JWT_REFRESH_TOKEN_EXPIRATION_DELTA > timezone.now()
-                ):
+                # Check if the token has not expired
+                if token.issued + JWT_REFRESH_TOKEN_EXPIRATION_DELTA > timezone.now():
                     return token
-    except Exception:
-        raise AuthError('Invalid Refresh Token', code='INVALID_REFRESH_TOKEN')
+                raise AuthError('Refresh token validity expired', code='REFRESH_TOKEN_EXPIRED')
+            raise AuthError('Refresh token payload not matching records', code='INVALID_TOKEN_PAYLOAD')
+    raise AuthError('Invalid fingerprint for refresh token', code='INVALID_REFRESH_TOKEN_FINGERPRINT')
 
 
 def get_refresh_token_from_request(request: HttpRequest) -> RefreshToken:
