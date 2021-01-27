@@ -106,7 +106,8 @@ def respond_handling_authentication(
 
         # Revoke Token if query is logoutUser and successful
         if 'logoutUser' in result['data'] and result['data']['logoutUser']:
-            logout_user(request=request, result=result, status_code=status_code)
+            resp = logout_user(request=request, result=result, status_code=status_code)
+            return resp
 
     # Refresh Token automatically if token exists
     if 'JWT_REFRESH_TOKEN' in request.COOKIES:
