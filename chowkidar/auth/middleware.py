@@ -5,8 +5,10 @@ class ChowkidarAuthMiddleware:
 
     def resolve(self, next, root, info, **kwargs):
         context = info.context
-        userID = resolve_user_from_request(context)
-        context.userID = userID
+        if not hasattr(info.context, 'ChowkidarIDResolved'):
+            userID = resolve_user_from_request(context)
+            context.userID = userID
+            info.context.ChowkidarIDResolved = True
         return next(root, info, **kwargs)
 
 

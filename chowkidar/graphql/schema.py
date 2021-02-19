@@ -52,12 +52,16 @@ class UserSession(graphene.ObjectType):
 class AuthQueries(graphene.ObjectType):
     mySessions = graphene.List(
         UserSession,
-        description="View sessions of the current user"
+        description="View sessions of the current user",
+        offset=graphene.Int(),
+        count=graphene.Int()
     )
 
     @fingerprint_required
-    def resolve_mySessions(self, info):
-        return RefreshToken.objects.filter(user_id=info.context.userID).order_by('-revoked', '-issued')
+    def resolve_mySessions(self, info, offset=0, count=10):
+        return RefreshToken.objects.filter(
+            user_id=info.context.userID
+        ).order_by('-revoked', '-issued')[offset:offset+count]
 
 
 class AuthenticatedUser(graphene.ObjectType):
