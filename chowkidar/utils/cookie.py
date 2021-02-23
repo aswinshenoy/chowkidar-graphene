@@ -9,15 +9,15 @@ def set_cookie(
     expires: datetime,
 ) -> (HttpResponse or JsonResponse):
     """ Sets a cookie through HTTP Response """
-    from ..settings import JWT_COOKIE_SAME_SITE
+    from ..settings import JWT_COOKIE_SAME_SITE, JWT_COOKIE_SECURE, JWT_COOKIE_HTTP_ONLY
 
     response.set_cookie(
         key=key,
         value=value,
         # if enabled, cookie is sent only when request is made via https
-        secure=False,
+        secure=JWT_COOKIE_SECURE,
         # prevents client-side JS from accessing cookie
-        httponly=True,
+        httponly=JWT_COOKIE_HTTP_ONLY,
         # expire time of cookie
         expires=expires,
         # samesite disable

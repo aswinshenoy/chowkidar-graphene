@@ -20,7 +20,14 @@ JWT_COOKIE_SAME_SITE = (
     settings.JWT_COOKIE_SAME_SITE if hasattr(settings, 'JWT_COOKIE_SAME_SITE')
     else 'Lax'
 )
-
+JWT_COOKIE_SECURE = (
+    settings.JWT_COOKIE_SECURE if hasattr(settings, 'JWT_COOKIE_SECURE')
+    else False
+)
+JWT_COOKIE_HTTP_ONLY = (
+    settings.JWT_COOKIE_HTTP_ONLY if hasattr(settings, 'JWT_COOKIE_HTTP_ONLY')
+    else True
+)
 ALLOW_USER_TO_LOGIN_ON_AUTH = (
     settings.ALLOW_USER_TO_LOGIN_ON_AUTH if hasattr(settings, 'ALLOW_USER_TO_LOGIN_ON_AUTH')
     else 'chowkidar.auth.rules.check_if_user_is_allowed_to_login'
