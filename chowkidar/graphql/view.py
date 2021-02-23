@@ -61,10 +61,10 @@ class GraphQLView(BaseGraphQLView):
     @method_decorator(ensure_csrf_cookie)
     def dispatch(self, request, *args, **kwargs):
         try:
-            if request.method.lower() not in ("get", "post"):
+            if request.method.lower() not in ("get", "post", "options"):
                 raise HttpError(
                     HttpResponseNotAllowed(
-                        ["GET", "POST"], "GraphQL only supports GET and POST requests."
+                        ["GET", "POST", "OPTIONS"], "GraphQL only supports GET, POST and OPTIONS requests."
                     )
                 )
 

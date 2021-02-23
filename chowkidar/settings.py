@@ -16,6 +16,11 @@ JWT_REFRESH_TOKEN_EXPIRATION_DELTA = (
     settings.JWT_REFRESH_TOKEN_EXPIRATION_DELTA if hasattr(settings, 'JWT_REFRESH_TOKEN_EXPIRATION_DELTA')
     else timedelta(seconds=60 * 60 * 24 * 7)
 )
+JWT_COOKIE_SAME_SITE = (
+    settings.JWT_COOKIE_SAME_SITE if hasattr(settings, 'JWT_COOKIE_SAME_SITE')
+    else 'Lax'
+)
+
 ALLOW_USER_TO_LOGIN_ON_AUTH = (
     settings.ALLOW_USER_TO_LOGIN_ON_AUTH if hasattr(settings, 'ALLOW_USER_TO_LOGIN_ON_AUTH')
     else 'chowkidar.auth.rules.check_if_user_is_allowed_to_login'

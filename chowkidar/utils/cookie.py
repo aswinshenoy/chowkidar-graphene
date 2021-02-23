@@ -1,5 +1,5 @@
 from datetime import datetime
-from django.http import HttpResponse,JsonResponse
+from django.http import HttpResponse, JsonResponse
 
 
 def set_cookie(
@@ -9,6 +9,8 @@ def set_cookie(
     expires: datetime,
 ) -> (HttpResponse or JsonResponse):
     """ Sets a cookie through HTTP Response """
+    from ..settings import JWT_COOKIE_SAME_SITE
+
     response.set_cookie(
         key=key,
         value=value,
@@ -17,7 +19,9 @@ def set_cookie(
         # prevents client-side JS from accessing cookie
         httponly=True,
         # expire time of cookie
-        expires=expires
+        expires=expires,
+        # samesite disable
+        samesite=JWT_COOKIE_SAME_SITE
     )
     return response
 

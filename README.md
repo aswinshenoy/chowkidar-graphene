@@ -251,6 +251,7 @@ JWT_EXPIRATION_DELTA = timedelta(seconds=60)
 JWT_REFRESH_TOKEN_EXPIRATION_DELTA = timedelta(seconds=60 * 60 * 24 * 7)
 JWT_LEEWAY = 0
 JWT_ISSUER = None
+JWT_COOKIE_SAME_SITE = 'Lax'
 
 # function with spec (user: User): bool, defaults to True
 ALLOW_USER_TO_LOGIN_ON_AUTH = 'chowkidar.auth.rules.check_if_user_is_allowed_to_login'
