@@ -1,4 +1,3 @@
-from datetime import datetime
 from django.http import HttpRequest, JsonResponse
 from django.utils import timezone
 
@@ -90,7 +89,7 @@ def respond_handling_authentication(
                 },
                 expirationDelta=JWT_REFRESH_TOKEN_EXPIRATION_DELTA
             )
-            refreshExpiresIn = datetime.fromtimestamp(data['payload']['exp'])
+            refreshExpiresIn = data['payload']['exp']
             if 'socialAuth' in result['data'] and result['data']['socialAuth']['success']:
                 result['data']['socialAuth']['refreshExpiresIn'] = refreshExpiresIn
             else:
@@ -116,8 +115,8 @@ def respond_handling_authentication(
             token = request.COOKIES['JWT_TOKEN']
             try:
                 payload = decode_payload_from_token(token=token)
-                expiry = datetime.fromtimestamp(payload['exp'])
-                now = datetime.now()
+                expiry = payload['exp']
+                now = timezone.now()
                 if expiry > now + (JWT_EXPIRATION_DELTA/2):
                     resp = JsonResponse(result, status=status_code)
                     return resp
@@ -160,7 +159,7 @@ def respond_handling_authentication(
                     },
                     expirationDelta=JWT_REFRESH_TOKEN_EXPIRATION_DELTA
                 )
-                refreshExpiresIn = datetime.fromtimestamp(data['payload']['exp'])
+                refreshExpiresIn = data['payload']['exp']
                 resp = set_cookie(
                     key='JWT_REFRESH_TOKEN', value=data['token'],
                     expires=refreshExpiresIn, response=resp
@@ -177,7 +176,7 @@ def respond_handling_authentication(
                 },
                 expirationDelta=JWT_EXPIRATION_DELTA
             )
-            JWTExpiry = datetime.fromtimestamp(data['payload']['exp'])
+            JWTExpiry = data['payload']['exp']
             resp = set_cookie(
                 key='JWT_TOKEN', value=data['token'],
                 expires=JWTExpiry, response=resp

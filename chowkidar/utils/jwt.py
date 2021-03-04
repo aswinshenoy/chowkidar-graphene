@@ -44,7 +44,7 @@ def encode_payload(payload: object) -> str:
         # private key or secret key
         JWT_PRIVATE_KEY or JWT_SECRET_KEY,
         algorithm=JWT_ALGORITHM
-    ).decode('utf-8')
+    )
 
 
 def decode_token(token: str) -> object:
