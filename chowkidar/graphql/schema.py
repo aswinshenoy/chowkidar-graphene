@@ -69,13 +69,13 @@ class AuthenticatedUser(graphene.ObjectType):
     username = graphene.String()
 
 
-class GenerateSocialTokenResponse(GenerateTokenResponse, graphene.ObjectType):
-    social = graphene.JSONString()
-
-
 class GenerateTokenResponse(graphene.ObjectType):
     success = graphene.Boolean()
     user = graphene.Field(USER_GRAPHENE_OBJECT)
+
+
+class GenerateSocialTokenResponse(GenerateTokenResponse, graphene.ObjectType):
+    social = graphene.JSONString()
 
 
 class AuthenticateUser(graphene.Mutation, description='Authenticate a user using password'):
