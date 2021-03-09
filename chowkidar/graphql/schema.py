@@ -69,6 +69,10 @@ class AuthenticatedUser(graphene.ObjectType):
     username = graphene.String()
 
 
+class GenerateSocialTokenResponse(GenerateTokenResponse, graphene.ObjectType):
+    social = graphene.JSONString()
+
+
 class GenerateTokenResponse(graphene.ObjectType):
     success = graphene.Boolean()
     user = graphene.Field(USER_GRAPHENE_OBJECT)
@@ -148,7 +152,7 @@ class SocialAuth(graphene.Mutation, description='Authenticate a user using socia
         accessToken = graphene.String(required=True, description='Access Token from Client')
         provider = graphene.String(required=True, description='Auth Provider')
 
-    Output = GenerateTokenResponse
+    Output = GenerateSocialTokenResponse
 
     def mutate(self, info, accessToken, provider):
         try:
@@ -175,7 +179,7 @@ class SocialAuth(graphene.Mutation, description='Authenticate a user using socia
         if import_string(REVOKE_OTHER_TOKENS_ON_AUTH_FOR_USER)(user):
             revoke_other_tokens(userID=user.id, request=info.context)
 
-        return {"success": True, "user": user.__dict__}
+        return {"success": True, "user": user.__dict__, "social": user.social_user }
 
 
 class SocialAuthMutations(graphene.ObjectType):
