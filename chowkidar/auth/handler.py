@@ -19,6 +19,23 @@ def clear_cookies(resp: JsonResponse) -> JsonResponse:
     return resp
 
 
+def generate_refresh_token_cookie_data_from_userID(userID: str, request) -> object:
+    rt = generate_refresh_token(userID=userID, request=request)
+    update_user_last_login(rt.user, isLogin=True)
+
+    fingerprint = generate_fingerprint_from_request(request)
+    decoded = decode_fingerprint(fingerprint)
+    return generate_token_from_claims(
+        claims={
+            'refreshToken': rt.get_token(),
+            'fingerprint': fingerprint,
+            'ip': decoded['ip'],
+            'userAgent': decoded['agent']
+        },
+        expirationDelta=JWT_REFRESH_TOKEN_EXPIRATION_DELTA
+    )
+
+
 def logout_user(request: HttpRequest, result: object, status_code: str) -> JsonResponse:
     if 'JWT_REFRESH_TOKEN' in request.COOKIES:
         refreshToken = request.COOKIES["JWT_REFRESH_TOKEN"]
@@ -54,9 +71,18 @@ def is_auth_result(result: object) -> bool:
         # Social Auth
         (
             'socialAuth' in result['data'] and
+            result['data']['socialAuth'] and
             'success' in result['data']['socialAuth'] and
             result['data']['socialAuth']['success'] and
             result['data']['socialAuth']['user']['id']
+        ) or
+        # Refresh Token Auth
+        (
+            'setRefreshToken' in result['data'] and
+            result['data']['setRefreshToken'] and
+            'success' in result['data']['setRefreshToken'] and
+            result['data']['setRefreshToken']['success'] and
+            result['data']['setRefreshToken']['user']['id']
         )
     )
 
@@ -68,29 +94,18 @@ def respond_handling_authentication(
 
         # Issue Token if query is authenticateUser and successful
         if is_auth_result(result):
-            if 'socialAuth' in result['data'] and result['data']['socialAuth']['success']:
+            if 'setRefreshToken' in result['data'] and result['data']['setRefreshToken']['success']:
+                user = result['data']['setRefreshToken']['user']
+            elif 'socialAuth' in result['data'] and result['data']['socialAuth']['success']:
                 user = result['data']['socialAuth']['user']
-                userID = user['id']
             else:
                 user = result['data']['authenticateUser']['user']
-                userID = user['id']
 
-            rt = generate_refresh_token(userID=userID, request=request)
-            update_user_last_login(rt.user, isLogin=True)
-
-            fingerprint = generate_fingerprint_from_request(request)
-            decoded = decode_fingerprint(fingerprint)
-            data = generate_token_from_claims(
-                claims={
-                    'refreshToken': rt.get_token(),
-                    'fingerprint': fingerprint,
-                    'ip': decoded['ip'],
-                    'userAgent': decoded['agent']
-                },
-                expirationDelta=JWT_REFRESH_TOKEN_EXPIRATION_DELTA
-            )
+            data = generate_refresh_token_cookie_data_from_userID(userID=user['id'], request=request)
             refreshExpiresIn = data['payload']['exp']
-            if 'socialAuth' in result['data'] and result['data']['socialAuth']['success']:
+            if 'setRefreshToken' in result['data'] and result['data']['setRefreshToken']['success']:
+                result['data']['setRefreshToken']['refreshExpiresIn'] = refreshExpiresIn
+            elif 'socialAuth' in result['data'] and result['data']['socialAuth']['success']:
                 result['data']['socialAuth']['refreshExpiresIn'] = refreshExpiresIn
             else:
                 result['data']['authenticateUser']['refreshExpiresIn'] = refreshExpiresIn
@@ -190,6 +205,7 @@ def respond_handling_authentication(
 
 
 __all__ = [
+    'generate_refresh_token_cookie_data_from_userID',
     'respond_handling_authentication'
 ]
 

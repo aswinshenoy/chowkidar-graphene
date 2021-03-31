@@ -1,10 +1,12 @@
 import graphene
 from django.utils import timezone
 
-from chowkidar.models import RefreshToken
+from ..models import RefreshToken
 from .decorators import login_required, fingerprint_required
 from .exceptions import APIException
 from ..auth import authenticate_user_from_credentials
+from ..auth.verify import verify_refresh_token
+from ..auth.handler import generate_refresh_token_cookie_data_from_userID
 from ..utils import AuthError
 from ..settings import (
     USER_GRAPHENE_OBJECT,
@@ -182,6 +184,64 @@ class SocialAuth(graphene.Mutation, description='Authenticate a user using socia
         return {"success": True, "user": user.__dict__, "social": user.social_user }
 
 
+class RefreshTokenResponse(graphene.ObjectType):
+    refreshToken = graphene.String()
+
+
+class GetRefreshToken(graphene.Mutation, description='Authenticate a user using password and return a refresh token'):
+    class Arguments:
+        email = graphene.String(required=False, description="Email address of the user")
+        username = graphene.String(required=False, description="Username of the user")
+        password = graphene.String(required=True, description="Password of the user")
+
+    Output = RefreshTokenResponse
+
+    def mutate(self, info, password, email=None, username=None):
+        try:
+            user = authenticate_user_from_credentials(password=password, email=email, username=username)
+
+            if not import_string(ALLOW_USER_TO_LOGIN_ON_AUTH)(user):
+                raise AuthError('User not allowed to login', code='FORBIDDEN')
+
+            if import_string(REVOKE_OTHER_TOKENS_ON_AUTH_FOR_USER)(user):
+                revoke_other_tokens(userID=user.id, request=info.context)
+
+            data = generate_refresh_token_cookie_data_from_userID(userID=user.id, request=info.context)
+            return RefreshTokenResponse(refreshToken=data['token'])
+        except AuthError as e:
+            raise e
+
+
+class SetRefreshToken(graphene.Mutation, description='Authenticate a user using password'):
+    class Arguments:
+        token = graphene.String(required=True, description='Existing Refresh Token')
+
+    Output = GenerateTokenResponse
+
+    def mutate(self, info, token):
+        try:
+            from datetime import timedelta
+            rt = verify_refresh_token(token)
+            if timezone.now() - rt.issued > timedelta(minutes=2):
+                raise AuthError('This refresh token can no longer be used to set token cookie', code='FORBIDDEN')
+            user = rt.user
+
+            if not import_string(ALLOW_USER_TO_LOGIN_ON_AUTH)(user):
+                raise AuthError('User not allowed to login', code='FORBIDDEN')
+
+            if import_string(REVOKE_OTHER_TOKENS_ON_AUTH_FOR_USER)(user):
+                revoke_other_tokens(userID=user.id, request=info.context)
+
+            return {"success": True, "user": user}
+        except AuthError as e:
+            raise e
+
+
+class RefreshTokenMutations(graphene.ObjectType):
+    getRefreshToken = GetRefreshToken.Field()
+    setRefreshToken = SetRefreshToken.Field()
+
+
 class SocialAuthMutations(graphene.ObjectType):
     socialAuth = SocialAuth.Field()
 
@@ -189,5 +249,6 @@ class SocialAuthMutations(graphene.ObjectType):
 __all__ = [
     'AuthQueries',
     'AuthMutations',
+    'RefreshTokenMutations',
     'SocialAuthMutations'
 ]
