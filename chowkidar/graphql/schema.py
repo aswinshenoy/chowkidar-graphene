@@ -5,7 +5,7 @@ from ..models import RefreshToken
 from .decorators import login_required, fingerprint_required
 from .exceptions import APIException
 from ..auth import authenticate_user_from_credentials
-from ..auth.verify import verify_refresh_token
+from ..auth.verify import verify_refresh_token, get_refresh_token_from_request
 from ..auth.handler import generate_refresh_token_cookie_data_from_userID
 from ..utils import AuthError
 from ..settings import (
@@ -190,21 +190,26 @@ class RefreshTokenResponse(graphene.ObjectType):
 
 class GetRefreshToken(graphene.Mutation, description='Authenticate a user using password and return a refresh token'):
     class Arguments:
-        email = graphene.String(required=False, description="Email address of the user")
-        username = graphene.String(required=False, description="Username of the user")
-        password = graphene.String(required=True, description="Password of the user")
+        email = graphene.String(description="Email address of the user")
+        username = graphene.String(description="Username of the user")
+        password = graphene.String(description="Password of the user")
 
     Output = RefreshTokenResponse
 
-    def mutate(self, info, password, email=None, username=None):
+    def mutate(self, info, password=None, email=None, username=None):
         try:
-            user = authenticate_user_from_credentials(password=password, email=email, username=username)
+            request = info.context
+            try:
+                refreshToken = get_refresh_token_from_request(request)
+                user = refreshToken.user
+            except AuthError:
+                user = authenticate_user_from_credentials(password=password, email=email, username=username)
 
-            if not import_string(ALLOW_USER_TO_LOGIN_ON_AUTH)(user):
-                raise AuthError('User not allowed to login', code='FORBIDDEN')
+                if not import_string(ALLOW_USER_TO_LOGIN_ON_AUTH)(user):
+                    raise AuthError('User not allowed to login', code='FORBIDDEN')
 
-            if import_string(REVOKE_OTHER_TOKENS_ON_AUTH_FOR_USER)(user):
-                revoke_other_tokens(userID=user.id, request=info.context)
+                if import_string(REVOKE_OTHER_TOKENS_ON_AUTH_FOR_USER)(user):
+                    revoke_other_tokens(userID=user.id, request=info.context)
 
             data = generate_refresh_token_cookie_data_from_userID(userID=user.id, request=info.context)
             return RefreshTokenResponse(refreshToken=data['token'])
