@@ -1,6 +1,6 @@
 import json
 
-from django.core.exceptions import FieldError
+from django.core.exceptions import FieldError, ValidationError, PermissionDenied
 from django.db import ProgrammingError, DataError, IntegrityError
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
@@ -142,6 +142,10 @@ class GraphQLView(BaseGraphQLView):
             return self.format_response_error(error)
         if isinstance(error, ResponseError):
             return self.format_response_error(error)
+        if isinstance(error, ValidationError):
+            return {"message": error.__repr__(), "code": error.code}
+        if isinstance(error, PermissionDenied):
+            return {"message": error.__repr__(), "code": "PERMISSION_DENIED"}
         if isinstance(error, DataError):
             return {"message": error.__repr__(), "code": "DATA_ERROR"}
         if isinstance(error, FieldError):
