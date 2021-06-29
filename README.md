@@ -254,6 +254,7 @@ JWT_ISSUER = None
 JWT_COOKIE_SAME_SITE = 'Lax'
 JWT_COOKIE_SECURE = False
 JWT_COOKIE_HTTP_ONLY = True
+JWT_COOKIE_DOMAIN = 'example.com'
 
 # function with spec (user: User): bool, defaults to True
 ALLOW_USER_TO_LOGIN_ON_AUTH = 'chowkidar.auth.rules.check_if_user_is_allowed_to_login'

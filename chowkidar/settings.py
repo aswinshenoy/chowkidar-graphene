@@ -9,6 +9,7 @@ JWT_REFRESH_TOKEN_N_BYTES = settings.JWT_REFRESH_TOKEN_N_BYTES if hasattr(settin
 JWT_ALGORITHM = settings.JWT_ALGORITHM if hasattr(settings, 'JWT_ALGORITHM') else 'HS256'
 JWT_LEEWAY = settings.JWT_LEEWAY if hasattr(settings, 'JWT_LEEWAY') else 0
 JWT_ISSUER = settings.JWT_ISSUER if hasattr(settings, 'JWT_ISSUER') else None
+JWT_COOKIE_DOMAIN = settings.JWT_COOKIE_DOMAIN if hasattr(settings, 'JWT_COOKIE_DOMAIN') else None
 JWT_EXPIRATION_DELTA = (
     settings.JWT_EXPIRATION_DELTA if hasattr(settings, 'JWT_EXPIRATION_DELTA') else timedelta(seconds=60)
 )

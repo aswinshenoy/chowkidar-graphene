@@ -9,7 +9,7 @@ def set_cookie(
     expires: datetime,
 ) -> (HttpResponse or JsonResponse):
     """ Sets a cookie through HTTP Response """
-    from ..settings import JWT_COOKIE_SAME_SITE, JWT_COOKIE_SECURE, JWT_COOKIE_HTTP_ONLY
+    from ..settings import JWT_COOKIE_SAME_SITE, JWT_COOKIE_SECURE, JWT_COOKIE_HTTP_ONLY, JWT_COOKIE_DOMAIN
 
     response.set_cookie(
         key=key,
@@ -20,8 +20,10 @@ def set_cookie(
         httponly=JWT_COOKIE_HTTP_ONLY,
         # expire time of cookie
         expires=expires,
-        # samesite disable
-        samesite=JWT_COOKIE_SAME_SITE
+        # same site disable
+        samesite=JWT_COOKIE_SAME_SITE,
+        # cookie domain
+        domain=JWT_COOKIE_DOMAIN
     )
     return response
 
