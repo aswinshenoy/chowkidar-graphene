@@ -29,6 +29,12 @@ JWT_COOKIE_HTTP_ONLY = (
     settings.JWT_COOKIE_HTTP_ONLY if hasattr(settings, 'JWT_COOKIE_HTTP_ONLY')
     else True
 )
+
+PROTECT_GRAPHQL = (
+    settings.PROTECT_GRAPHQL if hasattr(settings, 'PROTECT_GRAPHQL')
+    else not settings.DEBUG
+)
+
 ALLOW_USER_TO_LOGIN_ON_AUTH = (
     settings.ALLOW_USER_TO_LOGIN_ON_AUTH if hasattr(settings, 'ALLOW_USER_TO_LOGIN_ON_AUTH')
     else 'chowkidar.auth.rules.check_if_user_is_allowed_to_login'

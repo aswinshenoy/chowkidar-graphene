@@ -9,6 +9,7 @@ An JWT-based authentication package for Django [Graphene](https://github.com/gra
 * Support for [Graphene](https://github.com/graphql-python/graphene) GraphQL APIs
 * Token & Refresh Token based JWT Authentication
 * Tokens stored as server-side cookie
+* Support for security measures - disable graphql introspection, get requests etc. on production
 * Support for restricting 1 device / 1 login for a user
 * Support for logging IP & User-Agent of user
 * Ability to Auto-Refresh JWT Token if the Refresh Token Exists
@@ -241,7 +242,7 @@ The following are the settings variables for the plugin to be defined in your pr
 All the setting variables along with their defaults values are listed below -
 
 ```python
-
+PROTECT_GRAPHQL = settings.DEBUG
 JWT_SECRET_KEY = settings.SECRET_KEY
 JWT_PUBLIC_KEY = None
 JWT_PRIVATE_KEY = None
