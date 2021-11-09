@@ -12,7 +12,8 @@ from ..settings import (
     USER_GRAPHENE_OBJECT,
     REVOKE_OTHER_TOKENS_ON_AUTH_FOR_USER,
     ALLOW_USER_TO_LOGIN_ON_AUTH,
-    JWT_REFRESH_TOKEN_EXPIRATION_DELTA
+    JWT_REFRESH_TOKEN_EXPIRATION_DELTA,
+    CHOWKIDAR_GAUTH_CALLBACK
 )
 from ..utils.settings import import_string
 
@@ -184,6 +185,59 @@ class SocialAuth(graphene.Mutation, description='Authenticate a user using socia
         return {"success": True, "user": user.__dict__, "social": user.social_user }
 
 
+class GAuth(graphene.Mutation, description='Authenticate a user using google identity services'):
+    class Arguments:
+        accessToken = graphene.String(required=True, description='Access Token from Client')
+
+    Output = GenerateSocialTokenResponse
+
+    def mutate(self, info, accessToken):
+        try:
+            from google.oauth2 import id_token
+            from google.auth.transport import requests
+            from google.auth.exceptions import GoogleAuthError
+        except ImportError:
+            raise AuthError(
+                'google oauth2 not installed',
+                code='LIBRARY_MISSING'
+            )
+
+        from ..settings import GOOGLE_AUTH_CLIENT_ID
+
+        try:
+            authObj = id_token.verify_oauth2_token(
+                accessToken,
+                requests.Request(),
+                GOOGLE_AUTH_CLIENT_ID,
+                clock_skew_in_seconds=2
+            )
+        except GoogleAuthError:
+            raise AuthError('Invalid access token', code='INVALID_TOKEN')
+
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        try:
+            user = User.objects.get(email=authObj['email'])
+        except User.DoesNotExist:
+            user = User.objects.create_user(
+                email=authObj['email'],
+                username=authObj['email'],
+                first_name=authObj['given_name'],
+                last_name=authObj['family_name'],
+            )
+
+        import_string(CHOWKIDAR_GAUTH_CALLBACK)(authObj, user)
+
+        if not import_string(ALLOW_USER_TO_LOGIN_ON_AUTH)(user):
+            raise AuthError('User not allowed to login', code='FORBIDDEN')
+
+        if import_string(REVOKE_OTHER_TOKENS_ON_AUTH_FOR_USER)(user):
+            revoke_other_tokens(userID=user.id, request=info.context)
+
+        return {"success": True, "user": user.__dict__}
+
+
 class RefreshTokenResponse(graphene.ObjectType):
     refreshToken = graphene.String()
 
@@ -249,6 +303,7 @@ class RefreshTokenMutations(graphene.ObjectType):
 
 class SocialAuthMutations(graphene.ObjectType):
     socialAuth = SocialAuth.Field()
+    gAuth = GAuth.Field()
 
 
 __all__ = [

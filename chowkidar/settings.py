@@ -63,3 +63,13 @@ USER_GRAPHENE_OBJECT = (
     settings.USER_GRAPHENE_OBJECT if hasattr(settings, 'UPDATE_USER_LAST_LOGIN_ON_REFRESH')
     else 'user.graphql.types.user.PersonalProfile'
 )
+
+GOOGLE_AUTH_CLIENT_ID = (
+    settings.GOOGLE_AUTH_CLIENT_ID if hasattr(settings, 'GOOGLE_AUTH_CLIENT_ID')
+    else ''
+)
+
+CHOWKIDAR_GAUTH_CALLBACK = (
+    settings.CHOWKIDAR_GAUTH_CALLBACK if hasattr(settings, 'CHOWKIDAR_GAUTH_CALLBACK')
+    else 'chowkidar.auth.rules.handle_gauth'
+)

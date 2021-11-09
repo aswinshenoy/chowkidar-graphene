@@ -13,6 +13,7 @@ An JWT-based authentication package for Django [Graphene](https://github.com/gra
 * Support for restricting 1 device / 1 login for a user
 * Support for logging IP & User-Agent of user
 * Ability to Auto-Refresh JWT Token if the Refresh Token Exists
+* Support for Social Auth via Google Identity Service
 * Support for Social Auth with [social-app-django](https://github.com/python-social-auth/social-app-django)
 * Support for Authenticated GraphQL Subscriptions with Django Channels
 * Support for file uploads adhering to [GraphQL Multipart Request Spec](https://github.com/jaydenseric/graphql-multipart-request-spec)
@@ -196,6 +197,23 @@ mutation {
 }
 ```
 
+**Google Auth**
+
+* mostly same as `authenticateUser` but sends `accessToken` instead of `email/username` + `password`
+
+```graphql
+mutation {
+  gAuth(accessToken: "<SOME TOKEN>"){
+    success
+    user
+    {
+      id
+      username
+    }
+  }
+}
+```
+
 **Logout a user**
 
 This is required since the cookies are server-side, and needs to be removed.
@@ -262,6 +280,9 @@ ALLOW_USER_TO_LOGIN_ON_AUTH = 'chowkidar.auth.rules.check_if_user_is_allowed_to_
 # function with spec (user: User): bool, defaults to False
 REVOKE_OTHER_TOKENS_ON_AUTH_FOR_USER = 'chowkidar.auth.rules.check_if_other_tokens_need_to_be_revoked'
 
+# function that gets called with auth object after a successful GAuth
+CHOWKIDAR_GAUTH_CALLBACK = 'chowkidar.auth.rules.handle_gauth'
+
 UPDATE_USER_LAST_LOGIN_ON_AUTH = True
 UPDATE_USER_LAST_LOGIN_ON_REFRESH = True
 USER_GRAPHENE_OBJECT = 'user.graphql.types.user.PersonalProfile'
@@ -269,6 +290,7 @@ USER_GRAPHENE_OBJECT = 'user.graphql.types.user.PersonalProfile'
 LOG_USER_IP_IN_REFRESH_TOKEN = True
 LOG_USER_AGENT_IN_REFRESH_TOKEN = True
 
+GOOGLE_AUTH_CLIENT_ID = 'blah1blah2.apps.googleusercontent.com'
 ```
 
 #### FAQ

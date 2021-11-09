@@ -68,6 +68,14 @@ def is_auth_result(result: object) -> bool:
             result['data']['authenticateUser']['success'] and
             result['data']['authenticateUser']['user']['id']
         ) or
+        # G Auth
+        (
+            'gAuth' in result['data'] and
+            result['data']['gAuth'] and
+            'success' in result['data']['gAuth'] and
+            result['data']['gAuth']['success'] and
+            result['data']['gAuth']['user']['id']
+        ) or
         # Social Auth
         (
             'socialAuth' in result['data'] and
@@ -98,6 +106,8 @@ def respond_handling_authentication(
                 user = result['data']['setRefreshToken']['user']
             elif 'socialAuth' in result['data'] and result['data']['socialAuth']['success']:
                 user = result['data']['socialAuth']['user']
+            elif 'gAuth' in result['data'] and result['data']['gAuth']['success']:
+                user = result['data']['gAuth']['user']
             else:
                 user = result['data']['authenticateUser']['user']
 
@@ -107,6 +117,8 @@ def respond_handling_authentication(
                 result['data']['setRefreshToken']['refreshExpiresIn'] = refreshExpiresIn
             elif 'socialAuth' in result['data'] and result['data']['socialAuth']['success']:
                 result['data']['socialAuth']['refreshExpiresIn'] = refreshExpiresIn
+            elif 'gAuth' in result['data'] and result['data']['gAuth']['success']:
+                result['data']['gAuth']['refreshExpiresIn'] = refreshExpiresIn
             else:
                 result['data']['authenticateUser']['refreshExpiresIn'] = refreshExpiresIn
             resp = JsonResponse(result, status=status_code)
