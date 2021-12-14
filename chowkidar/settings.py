@@ -48,7 +48,7 @@ UPDATE_USER_LAST_LOGIN_ON_AUTH = (
     else True
 )
 UPDATE_USER_LAST_LOGIN_ON_REFRESH = (
-    settings.UPDATE_USER_LAST_LOGIN_ON_AUTH if hasattr(settings, 'UPDATE_USER_LAST_LOGIN_ON_REFRESH')
+    settings.UPDATE_USER_LAST_LOGIN_ON_REFRESH if hasattr(settings, 'UPDATE_USER_LAST_LOGIN_ON_REFRESH')
     else True
 )
 LOG_USER_IP_IN_REFRESH_TOKEN = (
@@ -60,7 +60,7 @@ LOG_USER_AGENT_IN_REFRESH_TOKEN = (
     else True
 )
 USER_GRAPHENE_OBJECT = (
-    settings.USER_GRAPHENE_OBJECT if hasattr(settings, 'UPDATE_USER_LAST_LOGIN_ON_REFRESH')
+    settings.USER_GRAPHENE_OBJECT if hasattr(settings, 'USER_GRAPHENE_OBJECT')
     else 'user.graphql.types.user.PersonalProfile'
 )
 
